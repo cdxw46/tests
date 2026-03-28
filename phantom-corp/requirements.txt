@@ -1,0 +1,9 @@
+# Phantom Corp — CTF Challenge Dependencies
+flask>=3.0
+flask-sqlalchemy>=3.1
+gunicorn>=21.0
+jwcrypto>=1.5
+PyJWT>=2.7
+cryptography>=41.0
+requests>=2.31
+sqlalchemy>=2.0

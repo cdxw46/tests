@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Employee Portal — Login{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+    <canvas id="particles" class="particles-bg"></canvas>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="/static/img/logo.svg" alt="Phantom Corp" class="auth-logo">
+                <h1>PHANTOM<span class="accent">CORP</span></h1>
+                <p class="text-muted">Employee Authentication Portal</p>
+            </div>
+
+            <form method="POST" action="/login" class="auth-form">
+                <div class="form-group">
+                    <label for="username">
+                        <span class="label-icon">👤</span> Username
+                    </label>
+                    <input type="text" id="username" name="username" required
+                           placeholder="Enter your employee ID"
+                           autocomplete="username" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <span class="label-icon">🔑</span> Password
+                    </label>
+                    <input type="password" id="password" name="password" required
+                           placeholder="Enter your password"
+                           autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    <span class="btn-icon">→</span> Authenticate
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p class="text-muted text-sm">
+                    Secured with JWE (RSA-OAEP-256 + AES-256-GCM)<br>
+                    <span class="text-xs">Session tokens are encrypted end-to-end</span>
+                </p>
+                <a href="/" class="link-back">← Back to Phantom Corp</a>
+            </div>
+        </div>
+
+        <div class="auth-terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+                <span class="terminal-title">phantom-auth-service</span>
+            </div>
+            <div class="terminal-body" id="terminal-output">
+                <p><span class="term-green">[+]</span> Auth service initialized</p>
+                <p><span class="term-cyan">[*]</span> Loading RSA keypair...</p>
+                <p><span class="term-green">[+]</span> JWE engine ready (RSA-OAEP-256 + A256GCM)</p>
+                <p><span class="term-cyan">[*]</span> JWKS endpoint: <span class="term-yellow">/.well-known/jwks.json</span></p>
+                <p><span class="term-green">[+]</span> Waiting for authentication requests...</p>
+                <p class="term-cursor">_</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

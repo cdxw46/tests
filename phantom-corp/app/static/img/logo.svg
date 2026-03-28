@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield outline -->
+  <path d="M32 4 L56 16 V36 C56 48 44 58 32 62 C20 58 8 48 8 36 V16 Z" 
+        stroke="url(#g1)" stroke-width="2.5" fill="none" opacity="0.9"/>
+  <!-- Inner shield -->
+  <path d="M32 10 L50 20 V35 C50 44 40 52 32 56 C24 52 14 44 14 35 V20 Z" 
+        fill="url(#g1)" opacity="0.12"/>
+  <!-- Lock body -->
+  <rect x="24" y="30" width="16" height="12" rx="2" fill="url(#g2)" opacity="0.9"/>
+  <!-- Lock shackle -->
+  <path d="M27 30 V25 C27 21.5 29.5 19 32 19 C34.5 19 37 21.5 37 25 V30" 
+        stroke="url(#g2)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Keyhole -->
+  <circle cx="32" cy="35" r="2" fill="#07070d"/>
+  <rect x="31" y="35" width="2" height="4" rx="1" fill="#07070d"/>
+  <!-- Glow dots -->
+  <circle cx="32" cy="12" r="1.5" fill="#8b5cf6" opacity="0.6"/>
+  <circle cx="18" cy="22" r="1" fill="#06b6d4" opacity="0.4"/>
+  <circle cx="46" cy="22" r="1" fill="#06b6d4" opacity="0.4"/>
+</svg>

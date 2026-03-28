@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Securing the Future{% endblock %}
+
+{% block body %}
+<div class="landing">
+    <!-- Particles background -->
+    <canvas id="particles" class="particles-bg"></canvas>
+
+    <!-- Navigation -->
+    <nav class="nav-landing">
+        <div class="nav-brand">
+            <img src="/static/img/logo.svg" alt="Phantom Corp" class="nav-logo">
+            <span class="nav-title">PHANTOM<span class="accent">CORP</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+            <a href="/login" class="btn btn-outline btn-sm">Employee Portal</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🔒 Enterprise Security Platform v{{ app_version }}</div>
+            <h1 class="hero-title">
+                <span class="glitch" data-text="PHANTOM CORP">PHANTOM CORP</span>
+            </h1>
+            <p class="hero-subtitle">
+                Securing the future. Protecting your data.<br>
+                <span class="text-muted">Advanced cybersecurity solutions for the digital age.</span>
+            </p>
+            <div class="hero-actions">
+                <a href="/login" class="btn btn-primary btn-lg">
+                    <span class="btn-icon">→</span> Employee Portal
+                </a>
+                <a href="#services" class="btn btn-ghost btn-lg">Our Services</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">2,847</span>
+                    <span class="stat-label">Threats Blocked Today</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">99.97%</span>
+                    <span class="stat-label">Uptime SLA</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">156</span>
+                    <span class="stat-label">Enterprise Clients</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="section">
+        <div class="container">
+            <h2 class="section-title">Our <span class="accent">Services</span></h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🛡️</div>
+                    <h3>Threat Intelligence</h3>
+                    <p>Real-time monitoring and analysis of global threat landscapes. AI-powered detection with zero-day response capabilities.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🔐</div>
+                    <h3>Identity & Access</h3>
+                    <p>Enterprise-grade authentication systems using state-of-the-art JWE encryption with RSA-OAEP-256 key management.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📊</div>
+                    <h3>Security Analytics</h3>
+                    <p>Comprehensive dashboards and reporting. Deep-dive into access patterns with our advanced statistics engine.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📝</div>
+                    <h3>Compliance Docs</h3>
+                    <p>Automated compliance documentation with our internal markdown rendering engine. SOC2 and ISO 27001 ready.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section section-dark">
+        <div class="container">
+            <h2 class="section-title">About <span class="accent">Us</span></h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Founded in 2024, Phantom Corp has rapidly become a leader in enterprise cybersecurity. Our team of security researchers and engineers works around the clock to protect critical infrastructure.</p>
+                    <p>We believe security is not a product, but a process. Our integrated platform combines threat intelligence, identity management, and compliance automation into a single unified experience.</p>
+                    <div class="tech-stack">
+                        <span class="tech-tag">RSA-OAEP-256</span>
+                        <span class="tech-tag">JWE/JWS</span>
+                        <span class="tech-tag">AES-256-GCM</span>
+                        <span class="tech-tag">Zero Trust</span>
+                        <span class="tech-tag">SIEM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="/static/img/logo.svg" alt="Phantom Corp" class="footer-logo">
+                    <span>PHANTOM<span class="accent">CORP</span></span>
+                </div>
+                <p class="footer-text">© {{ year }} Phantom Corp — All systems nominal.</p>
+                <p class="footer-text text-muted">Internal Platform v{{ app_version }} | Build 2026.03.28</p>
+            </div>
+        </div>
+    </footer>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="admin-page">
+    {% include "admin/_sidebar.html" %}
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="text-muted">System overview and metrics</p>
+            </div>
+            <div class="header-right">
+                <span class="nav-user">👤 {{ user.sub }} <span class="badge badge-admin">{{ user.role }}</span></span>
+                <a href="/logout" class="btn btn-outline btn-sm">Logout</a>
+            </div>
+        </header>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">👥</div>
+                <div class="metric-info">
+                    <span class="metric-value">{{ total_users }}</span>
+                    <span class="metric-label">Registered Users</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📋</div>
+                <div class="metric-info">
+                    <span class="metric-value">{{ total_logs }}</span>
+                    <span class="metric-label">Access Log Entries</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📝</div>
+                <div class="metric-info">
+                    <span class="metric-value">{{ total_notes }}</span>
+                    <span class="metric-label">Active Notes</span>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🛡️</div>
+                <div class="metric-info">
+                    <span class="metric-value">NOMINAL</span>
+                    <span class="metric-label">System Status</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Recent Access Logs</h2>
+                <a href="/admin/stats" class="btn btn-outline btn-sm">View Statistics →</a>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Action</th>
+                            <th>IP Address</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                        <tr>
+                            <td><code>#{{ log.id }}</code></td>
+                            <td>{{ log.action }}</td>
+                            <td><code>{{ log.ip_address or 'N/A' }}</code></td>
+                            <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% if not recent_logs %}
+                        <tr><td colspan="4" class="text-center text-muted">No recent activity</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

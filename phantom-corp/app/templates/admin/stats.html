@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Statistics{% endblock %}
+
+{% block body %}
+<div class="admin-page">
+    {% include "admin/_sidebar.html" %}
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div>
+                <h1>Access Statistics</h1>
+                <p class="text-muted">Filter and analyze access log data</p>
+            </div>
+            <div class="header-right">
+                <span class="nav-user">👤 {{ user.sub }} <span class="badge badge-admin">{{ user.role }}</span></span>
+            </div>
+        </header>
+
+        <!-- Stats Filter -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📅 Date Range Filter</h2>
+            </div>
+            <div class="panel-body">
+                <form id="stats-form" class="stats-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date_start">Start Date</label>
+                            <input type="text" id="date_start" name="date_start"
+                                   value="2026-01-01" placeholder="YYYY-MM-DD">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_end">End Date</label>
+                            <input type="text" id="date_end" name="date_end"
+                                   value="2026-12-31" placeholder="YYYY-MM-DD">
+                        </div>
+                        <div class="form-group form-group-btn">
+                            <button type="submit" class="btn btn-primary">
+                                🔍 Query Statistics
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="api-hint">
+                    <code>GET /admin/api/stats?date_start=<span class="term-yellow">YYYY-MM-DD</span>&date_end=<span class="term-yellow">YYYY-MM-DD</span></code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="panel" id="results-panel" style="display:none;">
+            <div class="panel-header">
+                <h2>📊 Query Results</h2>
+                <span id="results-range" class="text-muted"></span>
+            </div>
+            <div class="panel-body">
+                <div id="results-loading" class="text-center" style="display:none;">
+                    <div class="spinner"></div>
+                    <p class="text-muted">Executing query...</p>
+                </div>
+                <div id="results-content"></div>
+                <div id="results-raw" class="code-block" style="display:none;">
+                    <pre id="results-json"></pre>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('stats-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const dateStart = document.getElementById('date_start').value;
+    const dateEnd = document.getElementById('date_end').value;
+    const panel = document.getElementById('results-panel');
+    const loading = document.getElementById('results-loading');
+    const content = document.getElementById('results-content');
+    const rawJson = document.getElementById('results-json');
+    const rawBlock = document.getElementById('results-raw');
+    const rangeSpan = document.getElementById('results-range');
+
+    panel.style.display = 'block';
+    loading.style.display = 'block';
+    content.innerHTML = '';
+    rawBlock.style.display = 'none';
+
+    try {
+        const resp = await fetch(`/admin/api/stats?date_start=${encodeURIComponent(dateStart)}&date_end=${encodeURIComponent(dateEnd)}`);
+        const data = await resp.json();
+        loading.style.display = 'none';
+
+        rangeSpan.textContent = `${dateStart} → ${dateEnd}`;
+
+        if (data.status === 'success' && data.data && data.data.length > 0) {
+            let html = '<table class="data-table"><thead><tr><th>Action</th><th>Count</th></tr></thead><tbody>';
+            data.data.forEach(row => {
+                html += `<tr><td>${row.action}</td><td><code>${row.total}</code></td></tr>`;
+            });
+            html += '</tbody></table>';
+            html += `<p class="text-muted" style="margin-top:1rem;">Total entries: <strong>${data.total_entries}</strong></p>`;
+            content.innerHTML = html;
+        } else if (data.status === 'error') {
+            content.innerHTML = `<div class="error-box"><strong>Error:</strong> ${data.message || 'Unknown error'}</div>`;
+        } else {
+            content.innerHTML = '<p class="text-muted">No data found for the specified date range.</p>';
+        }
+
+        rawJson.textContent = JSON.stringify(data, null, 2);
+        rawBlock.style.display = 'block';
+
+    } catch (err) {
+        loading.style.display = 'none';
+        content.innerHTML = `<div class="error-box"><strong>Request failed:</strong> ${err.message}</div>`;
+    }
+});
+</script>
+{% endblock %}

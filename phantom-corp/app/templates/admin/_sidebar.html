@@ -1,0 +1,34 @@
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <img src="/static/img/logo.svg" alt="Phantom Corp" class="sidebar-logo">
+        <div>
+            <span class="sidebar-title">PHANTOM<span class="accent">CORP</span></span>
+            <span class="sidebar-subtitle">Admin Panel</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="sidebar-link {% if request.path == '/admin/dashboard' %}active{% endif %}">
+            <span class="sidebar-icon">📊</span> Dashboard
+        </a>
+        <a href="/admin/stats" class="sidebar-link {% if '/admin/stats' in request.path %}active{% endif %}">
+            <span class="sidebar-icon">📈</span> Statistics
+        </a>
+        <a href="/admin/notes" class="sidebar-link {% if request.path == '/admin/notes' %}active{% endif %}">
+            <span class="sidebar-icon">📝</span> Notes
+        </a>
+        <a href="/admin/notes/preview" class="sidebar-link {% if 'preview' in request.path %}active{% endif %}">
+            <span class="sidebar-icon">👁️</span> Note Preview
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-info">
+            <span class="text-xs text-muted">Platform v{{ app_version }}</span>
+            <span class="text-xs text-muted">Build 2026.03.28</span>
+        </div>
+        <a href="/logout" class="sidebar-link">
+            <span class="sidebar-icon">🚪</span> Logout
+        </a>
+    </div>
+</aside>

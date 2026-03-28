@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Note Preview{% endblock %}
+
+{% block body %}
+<div class="admin-page">
+    {% include "admin/_sidebar.html" %}
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <div>
+                <h1>Markdown Note Preview</h1>
+                <p class="text-muted">Render markdown content or fetch from a source URL</p>
+            </div>
+        </header>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📝 Content Input</h2>
+            </div>
+            <div class="panel-body">
+                <form method="POST" action="/admin/notes/preview" class="preview-form">
+                    <div class="form-group">
+                        <label for="content">Markdown Content</label>
+                        <textarea id="content" name="content" rows="8"
+                                  placeholder="# Enter markdown here...&#10;&#10;**Bold text**, *italic text*, `code`">{{ raw_content or '' }}</textarea>
+                    </div>
+
+                    <div class="form-divider">
+                        <span>— OR —</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source_url">
+                            Source URL <span class="text-muted text-xs">(fetch content from URL)</span>
+                        </label>
+                        <input type="text" id="source_url" name="source_url"
+                               placeholder="https://example.com/document.md"
+                               value="">
+                        <span class="form-hint">Supports http://, https://, and internal file:// URIs</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        👁️ Render Preview
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="panel">
+            <div class="panel-body">
+                <div class="error-box">⚠️ {{ error }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if rendered %}
+        <div class="panel">
+            <div class="panel-header">
+                <h2>👁️ Rendered Output</h2>
+            </div>
+            <div class="panel-body">
+                <div class="markdown-preview">
+                    {{ rendered | safe }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
