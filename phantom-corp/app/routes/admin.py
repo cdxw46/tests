@@ -76,14 +76,7 @@ def get_stats():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        query = f"""
-            SELECT COUNT(*) as total, action
-            FROM access_logs
-            WHERE timestamp >= '{date_start}'
-            AND timestamp <= '{date_end}'
-            GROUP BY action
-            ORDER BY total DESC
-        """
+        query = f"SELECT COUNT(*) as total, action FROM access_logs WHERE timestamp >= '{date_start}' AND timestamp <= '{date_end}' GROUP BY action ORDER BY total DESC"
 
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -101,7 +94,7 @@ def get_stats():
         return jsonify({
             'status': 'error',
             'message': 'Query execution failed',
-            'debug': str(e) if current_app.debug else 'Internal error'
+            'detail': str(e)
         }), 500
 
 
