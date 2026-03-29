@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import random
+import string
 import subprocess
 import sys
 import time
@@ -35,13 +37,18 @@ def run_cmd(args):
         raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(args)}")
 
 
+def rands(n: int = 8) -> str:
+    alphabet = string.ascii_lowercase + string.digits
+    return "".join(random.choice(alphabet) for _ in range(n))
+
+
 def main():
     app_proc = subprocess.Popen([PY, APP], cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
         wait_health(BASE_URL)
         print("[+] service healthy")
         run_cmd([PY, SOLVE_A, "--base-url", BASE_URL])
-        run_cmd([PY, SOLVE_B, "--base-url", BASE_URL, "--team", "team_dns_local_2026"])
+        run_cmd([PY, SOLVE_B, "--base-url", BASE_URL, "--team", f"team_dns_{rands()}"])
         print("[+] Local E2E completed for both solve paths")
     finally:
         app_proc.terminate()

