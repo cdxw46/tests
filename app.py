@@ -10,9 +10,9 @@ from flask import Flask, jsonify, render_template, request, send_file
 from abyss_ctf.engine import (
     FINAL_FLAG,
     INTERNAL_HOST,
-    SAFE_HOST,
-    AbyssChallenge,
-    Store,
+    ALLOWED_HOST,
+    AbyssEngine,
+    AbyssStore,
 )
 
 
@@ -21,8 +21,8 @@ STATIC_DIR = BASE_DIR / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"), static_folder=str(STATIC_DIR))
-store = Store()
-engine = AbyssChallenge(store)
+store = AbyssStore()
+engine = AbyssEngine(store)
 
 TEAM_RE = re.compile(r"^[A-Za-z0-9_-]{3,36}$")
 FLAG_RE = re.compile(r"^FLAG\{[A-Za-z0-9_]+\}$")
@@ -70,7 +70,7 @@ def challenge():
             "category": "web+stego+crypto+supply-chain",
             "single_flag": True,
             "cve_inspiration": ["CVE-2026-25960", "CVE-2026-31976", "CVE-2026-33634"],
-            "allowed_host": SAFE_HOST,
+            "allowed_host": ALLOWED_HOST,
             "objective": "solve all stages and submit one final flag",
         }
     )
@@ -83,7 +83,7 @@ def register():
     if not TEAM_RE.match(name):
         return err("team_name must match [A-Za-z0-9_-]{3,36}")
     try:
-        sess = store.create_session(name)
+        sess = store.add_team(name)
     except sqlite3.IntegrityError:
         return err("team already exists", 409)
     return ok({"session": sess}, 201)
@@ -95,13 +95,13 @@ def gateway_fetch():
     t = token()
     if not t:
         return err("missing token", 401)
-    if not store.session_by_token(t):
+    if not store.team(t):
         return err("invalid token", 401)
     d = body()
     url = str(d.get("url", "")).strip()
     if not url:
         return err("url is required")
-    out = engine.fetch(t, url)
+    out = engine.gateway_fetch(t, url)
     if not out.get("ok"):
         return err(out.get("error", "blocked"), 403)
     return ok(out)
@@ -112,12 +112,12 @@ def pipeline_run():
     t = token()
     if not t:
         return err("missing token", 401)
-    if not store.session_by_token(t):
+    if not store.team(t):
         return err("invalid token", 401)
     d = body()
     mutable_tag = str(d.get("mutable_tag", "v5")).strip()
     pin = str(d.get("pin_sha", "")).strip() or None
-    out = engine.run_pipeline(t, mutable_tag, pin)
+    out = engine.repo_artifact(t, mutable_tag, pin)
     if not out.get("ok"):
         return err(out.get("error", "pipeline error"), 403)
     return ok(out)
@@ -160,9 +160,11 @@ def metadata():
         return err("missing token", 401)
     if not store.team(t):
         return err("invalid token", 401)
-    data = engine.key_hint(t)
-    if not data.get("ok"):
-        return err(data.get("error", "not ready"), 403)
+    data = engine.metadata(t)
+    if not data:
+        return err("not ready", 403)
+    if "next" in data:
+        return err(data["next"], 403)
     return ok(data)
 
 

@@ -62,7 +62,7 @@ def solve(base_url: str, team: str):
     enc = json.loads(blob.decode())
 
     # Stage D: recover pepper -> derive key -> decrypt
-    kh = requests.get(f"{base}/api/key-hint", headers=headers, timeout=10)
+    kh = requests.get(f"{base}/api/metadata", headers=headers, timeout=10)
     kh.raise_for_status()
     kj = kh.json()
     if not kj.get("ok"):

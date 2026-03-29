@@ -400,6 +400,9 @@ class AbyssEngine:
         blob = json.dumps(enc, separators=(",", ":")).encode()
         return blob
 
+    def artifact(self, token: str, tag_digest: str) -> bytes:
+        return self.carrier_png(token, tag_digest=tag_digest)
+
     def carrier_png(self, token: str, tag_digest: str | None = None) -> bytes:
         if tag_digest is None:
             team = self.store.team(token)
