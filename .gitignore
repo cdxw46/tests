@@ -1,0 +1,4 @@
+.venv/
+__pycache__/
+*.pyc
+ctf_2026_pipeline/challenge.db
