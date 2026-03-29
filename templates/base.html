@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ title or "CI Phantom 2026" }}</title>
+  <title>{{ title or "Nebula Cipher 2026" }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
 </head>
 <body>
-  <header class="hero">
-    <div class="container">
-      <h1>CI Phantom 2026</h1>
-      <p>Hard web CTF challenge inspired by real 2026 CI/CD vulnerabilities.</p>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">Nebula Cipher 2026</div>
+      <div class="mono muted">hard / web + stego + crypto</div>
     </div>
   </header>
-  <main class="container">
+  <main class="wrap">
     {% block content %}{% endblock %}
   </main>
 </body>

@@ -1,85 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="hero">
+<section class="hero card">
   <div>
-    <h2>Incident Simulation: CI/CD Breach 2026</h2>
+    <span class="badge">single-flag hard chain</span>
+    <h2>Raven Gate 2026</h2>
     <p>
-      This hard web challenge recreates modern 2026 workflow injection patterns and DNS TCP egress bypass behavior.
-      Recover both flags through two independent exploit paths.
+      One unique final flag. Required chain: URL parser differential exploit, PNG LSB extraction, then AES-GCM decryption.
     </p>
   </div>
-  <div class="terminal-mini small mono">
-    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-    <div>$ policy.mode=block</div>
-    <div>$ workflow.run(untrusted_context)</div>
-    <div>$ dns +tcp leak ?</div>
-  </div>
-</div>
-
-<div class="layout">
-  <section class="card">
-    <span class="pill">challenge setup</span>
-    <h3>Register Team</h3>
-    <p class="muted">Create one team identity and keep your API token safe.</p>
-    <form id="register-form">
-      <label for="team_name">Team name</label>
-      <input id="team_name" name="team_name" minlength="3" maxlength="40" required placeholder="redteam_2026" />
-      <button type="submit">Create Team</button>
-    </form>
-    <div id="register-result" class="flash" style="display:none;"></div>
-  </section>
-
-  <section class="card">
-    <span class="pill">status</span>
-    <h3>Service Snapshot</h3>
-    <div class="list small mono">
-      <div>teams: <span id="teams-count">{{ snapshot.teams }}</span></div>
-      <div>runs: <span id="runs-count">{{ snapshot.runs }}</span></div>
-      <div>difficulty: hard</div>
-      <div>category: web / ci-cd</div>
+  <div class="term mono">
+    <div class="row">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
     </div>
-    <p class="muted">
-      Inspired by CVE-2026-33475, CVE-2026-27938, CVE-2026-32946.
-    </p>
-  </section>
-</div>
-
-<section class="card" style="margin-top:16px;">
-  <h3>Win Condition</h3>
-  <p class="muted">Obtain and submit both flags from different exploitation paths.</p>
-  <ul>
-    <li>User path flag from vulnerable pipeline context handling.</li>
-    <li>Root path flag from DNS TCP egress bypass chain.</li>
-  </ul>
-  <p>Final submit endpoint: <code>POST /api/submit</code></p>
+    <pre>$ curl /api/challenge
+$ POST /api/fetch
+$ decode lsb carrier
+$ decrypt aes-gcm
+$ submit one flag</pre>
+  </div>
 </section>
 
-<script>
-  const form = document.getElementById("register-form");
-  const result = document.getElementById("register-result");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    result.style.display = "none";
-    const teamName = document.getElementById("team_name").value.trim();
-    const resp = await fetch("/api/register", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({team_name: teamName})
-    });
-    const data = await resp.json();
-    result.style.display = "block";
-    if (!data.ok) {
-      result.className = "flash error";
-      result.textContent = "Error: " + data.error;
-      return;
-    }
-    result.className = "flash";
-    result.innerHTML = "Team created. Token: <code>" + data.team.api_token + "</code>";
-    const h = await fetch("/api/health").then(r => r.json());
-    if (h.ok) {
-      document.getElementById("teams-count").textContent = h.snapshot.teams;
-      document.getElementById("runs-count").textContent = h.snapshot.runs;
-    }
-  });
-</script>
+<div class="grid">
+  <section class="card">
+    <h3>Flow</h3>
+    <ul>
+      <li>Register team to get session token.</li>
+      <li>Exploit parser differential in fetch URL guard.</li>
+      <li>Receive bootstrap clue from internal vault.</li>
+      <li>Download team-bound carrier PNG and extract LSB payload.</li>
+      <li>Derive passphrase, decrypt AES-GCM blob, submit one flag.</li>
+    </ul>
+    <p class="meta">Theme inspired by parser confusion class in CVE-2026-25960.</p>
+  </section>
+
+  <section class="card">
+    <h3>Starter Endpoints</h3>
+    <pre class="mono">POST /api/register
+POST /api/fetch
+GET  /api/carrier?token=...
+GET  /api/metadata
+POST /api/submit</pre>
+    <p class="meta">Hints: <code>/api/hint/1</code> ... <code>/api/hint/4</code></p>
+    <p class="status-good">No brute force; intended exploit path only.</p>
+  </section>
+</div>
 {% endblock %}

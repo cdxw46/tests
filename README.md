@@ -1,66 +1,49 @@
-# CI Phantom 2026 - Hard Web CTF Challenge
+# Raven Gate 2026 - Hard CTF (single flag)
 
-`CI Phantom 2026` is a deliberately vulnerable web challenge modeled after real 2026 CI/CD classes of flaws:
+`Raven Gate 2026` is a hard challenge with one final flag and a mandatory poly-chain:
 
-- Context-variable shell injection in CI workflows (CVE-2026-33475 / CVE-2026-27938 style).
-- DNS TCP egress-policy bypass behavior in runners (CVE-2026-32946 style).
+- **Web:** parser-differential bypass (2026-inspired, CVE-2026-25960 class behavior).
+- **Stego:** LSB extraction from a dynamically generated PNG carrier.
+- **Crypto:** AES-256-GCM with PBKDF2-HMAC-SHA256 key derivation.
 
-## What is included
+## Final objective
 
-- Full Flask web challenge with frontend + API.
-- Two different intended exploit paths.
-- Automated local end-to-end test harness.
-- Public URL solvers for Pinggy-deployed instance.
+Recover exactly one final flag:
 
-## Setup
+- `FLAG{2026_web_stego_crypto_polychain_master}`
 
-1. Install prerequisites (if needed):
-   - `sudo apt-get update && sudo apt-get install -y python3-venv`
-2. Create virtual environment and install deps:
-   - `python3 -m venv .venv`
-   - `source .venv/bin/activate`
-   - `pip install -r requirements.txt`
-3. Run service:
-   - `python3 app.py`
-4. Open:
-   - `http://127.0.0.1:5000`
+## Local setup
 
-## End-to-end testing
+1. `sudo apt-get update && sudo apt-get install -y python3-venv`
+2. `python3 -m venv .venv`
+3. `source .venv/bin/activate`
+4. `pip install -r requirements.txt`
+5. `python3 app.py`
 
-### Local complete E2E
+Open `http://127.0.0.1:5000`.
 
-- `python3 tests/run_e2e_local.py`
+## End-to-end tests
 
-This starts the app, runs solve method A and B, and verifies final flag submission.
+### Local E2E
+
+- `./.venv/bin/python tests/run_e2e_local.py`
 
 ### Public URL E2E (Pinggy)
 
-Run against your exposed URL:
+- `./.venv/bin/python solve/solve_full_chain.py --base-url "https://your-subdomain.free.pinggy.link" --team "team_name"`
 
-- `python3 solve/method_a_internal_api.py --base-url "https://your-subdomain.free.pinggy.link"`
-- `python3 solve/method_b_dns_tcp.py --base-url "https://your-subdomain.free.pinggy.link"`
+## Intended solve chain
 
-## Solve paths
+1. Register team to obtain token.
+2. Exploit parser differential in `/api/proxy/fetch` using URL userinfo host confusion.
+3. Obtain bootstrap package from internal vault route.
+4. Recover `pepper` via XOR recipe (`pepper_ct_b64u`, `token`, `salt`).
+5. Derive passphrase.
+6. Download team carrier PNG.
+7. Extract LSB payload -> encrypted JSON.
+8. Decrypt AES-GCM payload and recover final flag.
+9. Submit to `/api/submit`.
 
-- **Method A (context injection path):**
-  - Exploit shell interpolation through `branch_name`.
-  - Read internal `/internal/vault/user` using pipeline token.
-  - Capture user flag.
+## Security note
 
-- **Method B (dns tcp path):**
-  - Leak `GITHUB_TOKEN` and `ADMIN_PASS` from vulnerable run context.
-  - Call local `/api/runner/dns-tcp` from runner context.
-  - Use leaked admin password to read `/internal/vault/root`.
-  - Submit both flags and recover final master flag.
-
-## Files
-
-- `app.py`: Flask app and challenge endpoints.
-- `ctf_2026_pipeline/challenge.py`: DB + vulnerable runner logic.
-- `solve/method_a_internal_api.py`: solver for path A.
-- `solve/method_b_dns_tcp.py`: solver for path B.
-- `tests/run_e2e_local.py`: automated end-to-end local verifier.
-
-## Security notice
-
-This project is intentionally vulnerable and for CTF/training only. Do not deploy in production.
+This is intentionally vulnerable and only for CTF/training.

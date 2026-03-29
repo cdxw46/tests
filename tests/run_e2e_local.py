@@ -10,62 +10,75 @@ import requests
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 PY = str(ROOT / ".venv" / "bin" / "python")
 APP = str(ROOT / "app.py")
-SOLVE_A = str(ROOT / "solve" / "method_a_internal_api.py")
-SOLVE_B = str(ROOT / "solve" / "method_b_dns_tcp.py")
-BASE_URL = "http://127.0.0.1:5000"
+SOLVER = str(ROOT / "solve" / "solve_full_chain.py")
+BASE = "http://127.0.0.1:5000"
 
 
-def wait_health(url: str, timeout: float = 20.0):
-    end = time.time() + timeout
+def wait_health():
+    end = time.time() + 20
     while time.time() < end:
         try:
-            r = requests.get(f"{url}/api/health", timeout=2)
+            r = requests.get(f"{BASE}/api/health", timeout=2)
             if r.status_code == 200:
                 return
         except Exception:
             pass
-        time.sleep(0.5)
-    raise RuntimeError("service did not become healthy in time")
+        time.sleep(0.4)
+    raise RuntimeError("health timeout")
 
 
-def run_cmd(args):
-    proc = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    print(proc.stdout)
-    if proc.returncode != 0:
-        raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(args)}")
-
-
-def rands(n: int = 8) -> str:
+def rid(n=8):
     alphabet = string.ascii_lowercase + string.digits
     return "".join(random.choice(alphabet) for _ in range(n))
 
 
+def run_solver():
+    team = f"local_{rid()}"
+    proc = subprocess.run(
+        [PY, SOLVER, "--base-url", BASE, "--team", team],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    print(proc.stdout)
+    if proc.returncode != 0:
+        raise RuntimeError("solver failed")
+    if "FLAG{2026_web_stego_crypto_polychain_master}" not in proc.stdout:
+        raise RuntimeError("final flag missing in solver output")
+
+
 def main():
-    app_proc = subprocess.Popen([PY, APP], cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    app_proc = subprocess.Popen(
+        [PY, APP],
+        cwd=str(ROOT),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
     try:
-        wait_health(BASE_URL)
-        print("[+] service healthy")
-        run_cmd([PY, SOLVE_A, "--base-url", BASE_URL])
-        run_cmd([PY, SOLVE_B, "--base-url", BASE_URL, "--team", f"team_dns_{rands()}"])
-        print("[+] Local E2E completed for both solve paths")
+        wait_health()
+        run_solver()
+        print("[+] local E2E passed")
     finally:
         app_proc.terminate()
         try:
-            app_proc.wait(timeout=5)
+            app_proc.wait(timeout=4)
         except subprocess.TimeoutExpired:
             app_proc.kill()
         if app_proc.stdout:
-            remaining = app_proc.stdout.read()
-            if remaining:
-                print("----- app log tail -----")
-                print(remaining)
+            tail = app_proc.stdout.read()
+            if tail:
+                print("----- app tail -----")
+                print(tail)
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as exc:
-        print(f"[!] E2E failed: {exc}")
+        print(f"[!] local E2E failed: {exc}")
         sys.exit(1)
