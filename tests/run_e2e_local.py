@@ -10,16 +10,21 @@ import requests
 
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 PY = str(ROOT / ".venv" / "bin" / "python")
 APP = str(ROOT / "app.py")
-SOLVER = str(ROOT / "solve" / "solve_full_chain.py")
+SOLVER_A = str(ROOT / "solve" / "solve_variant_a.py")
+SOLVER_B = str(ROOT / "solve" / "solve_variant_b.py")
 BASE = "http://127.0.0.1:5000"
+FLAG = "FLAG{2026_ultra_hard_web_stego_crypto_supplychain_abyss}"
+
+
+def rid(n: int = 8) -> str:
+    alpha = string.ascii_lowercase + string.digits
+    return "".join(random.choice(alpha) for _ in range(n))
 
 
 def wait_health():
-    end = time.time() + 20
+    end = time.time() + 25
     while time.time() < end:
         try:
             r = requests.get(f"{BASE}/api/health", timeout=2)
@@ -27,28 +32,22 @@ def wait_health():
                 return
         except Exception:
             pass
-        time.sleep(0.4)
+        time.sleep(0.35)
     raise RuntimeError("health timeout")
 
 
-def rid(n=8):
-    alphabet = string.ascii_lowercase + string.digits
-    return "".join(random.choice(alphabet) for _ in range(n))
-
-
-def run_solver():
-    team = f"local_{rid()}"
+def run_solver(path: str, team: str):
     proc = subprocess.run(
-        [PY, SOLVER, "--base-url", BASE, "--team", team],
+        [PY, path, "--base-url", BASE, "--team", team],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
     )
     print(proc.stdout)
     if proc.returncode != 0:
-        raise RuntimeError("solver failed")
-    if "FLAG{2026_web_stego_crypto_polychain_master}" not in proc.stdout:
-        raise RuntimeError("final flag missing in solver output")
+        raise RuntimeError(f"solver failed: {path}")
+    if FLAG not in proc.stdout:
+        raise RuntimeError(f"final flag missing for solver: {path}")
 
 
 def main():
@@ -61,12 +60,13 @@ def main():
     )
     try:
         wait_health()
-        run_solver()
-        print("[+] local E2E passed")
+        run_solver(SOLVER_A, f"local_a_{rid()}")
+        run_solver(SOLVER_B, f"local_b_{rid()}")
+        print("[+] local E2E all variants passed")
     finally:
         app_proc.terminate()
         try:
-            app_proc.wait(timeout=4)
+            app_proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             app_proc.kill()
         if app_proc.stdout:

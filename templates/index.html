@@ -1,47 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="hero card">
+<section class="card hero">
   <div>
-    <span class="badge">single-flag hard chain</span>
-    <h2>Raven Gate 2026</h2>
+    <span class="pill">single flag / hard++</span>
+    <h2>AbyssGate 2026</h2>
     <p>
-      One unique final flag. Required chain: URL parser differential exploit, PNG LSB extraction, then AES-GCM decryption.
+      A long mandatory chain: parser-differential gateway bypass, mutable-tag poisoning simulation,
+      stego extraction with integrity framing, and AEAD decryption bound to previous artifacts.
     </p>
   </div>
-  <div class="term mono">
-    <div class="row">
-      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-    </div>
-    <pre>$ curl /api/challenge
-$ POST /api/fetch
-$ decode lsb carrier
-$ decrypt aes-gcm
-$ submit one flag</pre>
+  <div class="terminal mono">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <pre>$ register
+$ gateway/fetch bypass
+$ pipeline/run mutable tag
+$ extract LSB + checksum
+$ decrypt chacha20-poly1305</pre>
   </div>
 </section>
 
 <div class="grid">
   <section class="card">
-    <h3>Flow</h3>
+    <h3>2026 CVE-Inspired Classes</h3>
     <ul>
-      <li>Register team to get session token.</li>
-      <li>Exploit parser differential in fetch URL guard.</li>
-      <li>Receive bootstrap clue from internal vault.</li>
-      <li>Download team-bound carrier PNG and extract LSB payload.</li>
-      <li>Derive passphrase, decrypt AES-GCM blob, submit one flag.</li>
+      <li>CVE-2026-25960 class: parser differential SSRF bypass.</li>
+      <li>CVE-2026-31976 / 33634 class: mutable tag poisoning trust failure.</li>
+      <li>Complex post-exploitation data recovery via stego + crypto chain.</li>
     </ul>
-    <p class="meta">Theme inspired by parser confusion class in CVE-2026-25960.</p>
+    <p class="muted">Designed to resist trivial 2-minute solves.</p>
   </section>
 
   <section class="card">
-    <h3>Starter Endpoints</h3>
+    <h3>Primary Endpoints</h3>
     <pre class="mono">POST /api/register
-POST /api/fetch
+POST /api/gateway/fetch
+POST /api/pipeline/run
+GET  /api/repo/manifest
+GET  /api/repo/artifact?tag=...
 GET  /api/carrier?token=...
 GET  /api/metadata
 POST /api/submit</pre>
-    <p class="meta">Hints: <code>/api/hint/1</code> ... <code>/api/hint/4</code></p>
-    <p class="status-good">No brute force; intended exploit path only.</p>
+    <p class="muted">Hints: <code>/api/hint/1</code> ... <code>/api/hint/4</code></p>
   </section>
 </div>
 {% endblock %}

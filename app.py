@@ -7,11 +7,12 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, send_file
 
-from hard_ctf.challenge_engine import (
-    CANONICAL_HOST,
+from abyss_ctf.engine import (
+    FINAL_FLAG,
     INTERNAL_HOST,
-    ChallengeStore,
-    RavenChallenge,
+    SAFE_HOST,
+    AbyssChallenge,
+    Store,
 )
 
 
@@ -20,31 +21,31 @@ STATIC_DIR = BASE_DIR / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"), static_folder=str(STATIC_DIR))
-store = ChallengeStore()
-raven = RavenChallenge(store)
+store = Store()
+engine = AbyssChallenge(store)
 
-TEAM_RE = re.compile(r"^[A-Za-z0-9_-]{3,32}$")
+TEAM_RE = re.compile(r"^[A-Za-z0-9_-]{3,36}$")
 FLAG_RE = re.compile(r"^FLAG\{[A-Za-z0-9_]+\}$")
 
 
-def _ok(payload: dict, code: int = 200):
+def ok(payload: dict, code: int = 200):
     return jsonify({"ok": True, **payload}), code
 
 
-def _err(message: str, code: int = 400):
+def err(message: str, code: int = 400):
     return jsonify({"ok": False, "error": message}), code
 
 
-def _body() -> dict:
+def body() -> dict:
     return request.get_json(silent=True) or {}
 
 
-def _token() -> str:
+def token() -> str:
     t = request.headers.get("X-Team-Token", "").strip()
     if t:
         return t
-    data = _body()
-    t = str(data.get("token", "")).strip()
+    d = body()
+    t = str(d.get("token", "")).strip()
     if t:
         return t
     return request.args.get("token", "").strip()
@@ -57,149 +58,152 @@ def index():
 
 @app.get("/api/health")
 def health():
-    return _ok({"service": "raven-gate-2026", "snapshot": store.snapshot()})
+    return ok({"service": "abyss-gate-2026", "snapshot": store.snapshot()})
 
 
 @app.get("/api/challenge")
 def challenge():
-    return _ok(
+    return ok(
         {
-            "name": "Raven Gate 2026",
-            "category": "web+stego+crypto",
-            "difficulty": "hard",
+            "name": "AbyssGate 2026",
+            "difficulty": "hard++",
+            "category": "web+stego+crypto+supply-chain",
             "single_flag": True,
-            "cve_theme": "CVE-2026-25960 parser differential class",
-            "allowed_fetch_host": CANONICAL_HOST,
-            "objective": "obtain and submit one final flag",
+            "cve_inspiration": ["CVE-2026-25960", "CVE-2026-31976", "CVE-2026-33634"],
+            "allowed_host": SAFE_HOST,
+            "objective": "solve all stages and submit one final flag",
         }
     )
 
 
 @app.post("/api/register")
 def register():
-    data = _body()
-    team_name = str(data.get("team_name", "")).strip()
-    if not TEAM_RE.match(team_name):
-        return _err("team_name must match [A-Za-z0-9_-]{3,32}")
+    d = body()
+    name = str(d.get("team_name", "")).strip()
+    if not TEAM_RE.match(name):
+        return err("team_name must match [A-Za-z0-9_-]{3,36}")
     try:
-        sess = store.create_session(team_name)
+        sess = store.create_session(name)
     except sqlite3.IntegrityError:
-        return _err("team already exists", 409)
-    return _ok({"session": sess}, 201)
+        return err("team already exists", 409)
+    return ok({"session": sess}, 201)
 
 
 @app.post("/api/fetch")
-@app.post("/api/proxy/fetch")
-def proxy_fetch():
-    token = _token()
-    if not token:
-        return _err("missing team token", 401)
-    sess = store.session_by_token(token)
-    if not sess:
-        return _err("invalid team token", 401)
-
-    data = _body()
-    url = str(data.get("url", "")).strip()
+@app.post("/api/gateway/fetch")
+def gateway_fetch():
+    t = token()
+    if not t:
+        return err("missing token", 401)
+    if not store.session_by_token(t):
+        return err("invalid token", 401)
+    d = body()
+    url = str(d.get("url", "")).strip()
     if not url:
-        return _err("url is required")
+        return err("url is required")
+    out = engine.fetch(t, url)
+    if not out.get("ok"):
+        return err(out.get("error", "blocked"), 403)
+    return ok(out)
 
-    guard = raven.parse_guard(url)
-    if guard.get("ok") != "1":
-        store.add_event(token, "fetch_denied", {"url": url, "reason": guard.get("error", "blocked")})
-        return _err(guard.get("error", "blocked"), 403)
 
-    effective = guard["effective_host"]
-    if effective == INTERNAL_HOST:
-        clue = raven.reveal_internal_bootstrap(token)
-        store.add_event(
-            token,
-            "fetch_internal",
-            {"url": url, "validated_host": guard["validated_host"], "effective_host": effective},
-        )
-        return _ok(
-            {
-                "validated_host": guard["validated_host"],
-                "effective_host": effective,
-                "response": {"source": "internal_vault", "clue": clue},
-            }
-        )
+@app.post("/api/pipeline/run")
+def pipeline_run():
+    t = token()
+    if not t:
+        return err("missing token", 401)
+    if not store.session_by_token(t):
+        return err("invalid token", 401)
+    d = body()
+    mutable_tag = str(d.get("mutable_tag", "v5")).strip()
+    pin = str(d.get("pin_sha", "")).strip() or None
+    out = engine.run_pipeline(t, mutable_tag, pin)
+    if not out.get("ok"):
+        return err(out.get("error", "pipeline error"), 403)
+    return ok(out)
 
-    store.add_event(
-        token,
-        "fetch_public",
-        {"url": url, "validated_host": guard["validated_host"], "effective_host": effective},
-    )
-    return _ok(
-        {
-            "validated_host": guard["validated_host"],
-            "effective_host": effective,
-            "response": {
-                "source": "public_docs",
-                "data": {
-                    "note": "No secrets here. parser differential matters.",
-                    "policy": "trusted host only",
-                },
-            },
-        }
-    )
+
+@app.get("/api/artifact/carrier")
+@app.get("/api/repo/artifact")
+def repo_artifact():
+    t = token()
+    tag_digest = request.args.get("tag_digest", "").strip()
+    if not t:
+        return err("missing token", 401)
+    if not tag_digest:
+        return err("tag_digest required")
+    if not store.team(t):
+        return err("invalid token", 401)
+    try:
+        png = engine.artifact(t, tag_digest)
+    except Exception as exc:
+        return err(str(exc), 403)
+    return send_file(io.BytesIO(png), mimetype="image/png", download_name="abyss_carrier.png")
 
 
 @app.get("/api/carrier")
 def carrier():
-    token = _token()
-    if not token:
-        return _err("missing token", 401)
+    t = token()
+    if not t:
+        return err("missing token", 401)
     try:
-        png_data = raven.team_carrier(token)
+        png = engine.carrier_png(t)
     except Exception as exc:
-        return _err(str(exc), 403)
-    return send_file(io.BytesIO(png_data), mimetype="image/png", download_name="raven_carrier.png")
+        return err(str(exc), 403)
+    return send_file(io.BytesIO(png), mimetype="image/png", download_name="abyss_carrier.png")
 
 
 @app.get("/api/metadata")
 def metadata():
-    token = _token()
-    if not token:
-        return _err("missing token", 401)
-    meta = raven.metadata(token)
-    if not meta:
-        return _err("invalid token", 401)
-    return _ok(meta)
+    t = token()
+    if not t:
+        return err("missing token", 401)
+    if not store.team(t):
+        return err("invalid token", 401)
+    data = engine.key_hint(t)
+    if not data.get("ok"):
+        return err(data.get("error", "not ready"), 403)
+    return ok(data)
 
 
-@app.get("/api/stats")
-def stats():
-    token = _token()
-    if not token:
-        return _err("missing token", 401)
-    return _ok({"events": store.events(token)})
+@app.get("/api/events")
+def events():
+    t = token()
+    if not t:
+        return err("missing token", 401)
+    return ok({"events": store.events(t)})
 
 
 @app.post("/api/submit")
 def submit():
-    token = _token()
-    if not token:
-        return _err("missing team token", 401)
-    data = _body()
-    candidate = str(data.get("flag", "")).strip()
+    t = token()
+    if not t:
+        return err("missing token", 401)
+    d = body()
+    candidate = str(d.get("flag", "")).strip()
     if not FLAG_RE.match(candidate):
-        return _err("bad flag format")
-    if raven.verify(token, candidate):
-        return _ok({"solved": True, "message": "challenge solved"})
-    return _ok({"solved": False, "message": "incorrect flag"})
+        return err("bad flag format")
+    solved = engine.verify(t, candidate)
+    return ok({"solved": solved, "expected_single_flag": True})
 
 
 @app.get("/api/hint/<int:level>")
 def hint(level: int):
     hints = {
-        1: "Validator and fetcher parse URL authority differently.",
-        2: f"Guard expects {CANONICAL_HOST} but internal host is {INTERNAL_HOST}.",
-        3: "Recover pepper from XOR recipe in internal clue.",
-        4: "Carrier PNG stores AES-GCM JSON blob in RGB LSB stream.",
+        1: "Stage-1: authority parser mismatch allows internal bootstrap fetch.",
+        2: "Stage-2: mutable tags are trust boundaries; resolve the effective artifact.",
+        3: "Stage-3: carrier PNG hides JSON in RGB LSB with prefixed length.",
+        4: "Stage-4: decrypt chain requires secret from stage-1 and key material from stage-2.",
     }
     if level not in hints:
-        return _err("hint level out of range", 404)
-    return _ok({"level": level, "hint": hints[level]})
+        return err("hint level out of range", 404)
+    return ok({"level": level, "hint": hints[level]})
+
+
+@app.get("/api/debug/final")
+def debug_final():
+    # not a bypass: only reveals flag hash
+    return ok({"flag_sha256": __import__("hashlib").sha256(FINAL_FLAG.encode()).hexdigest()})
 
 
 if __name__ == "__main__":

@@ -1,18 +1,19 @@
-# Raven Gate 2026 - Hard CTF (single flag)
+# AbyssGate 2026 - Ultra Hard CTF (single flag)
 
-`Raven Gate 2026` is a hard challenge with one final flag and a mandatory poly-chain:
+`AbyssGate 2026` is a harder replacement challenge with a strict one-flag poly-chain inspired by 2026 vulnerability classes:
 
-- **Web:** parser-differential bypass (2026-inspired, CVE-2026-25960 class behavior).
-- **Stego:** LSB extraction from a dynamically generated PNG carrier.
-- **Crypto:** AES-256-GCM with PBKDF2-HMAC-SHA256 key derivation.
+- Parser-differential SSRF bypass (CVE-2026-25960 class).
+- Mutable tag poisoning/trust abuse in CI artifact resolution (CVE-2026-31976 / CVE-2026-33634 class).
+- PNG LSB steganography with checksum framing.
+- ChaCha20-Poly1305 decryption with PBKDF2-derived key tied to prior artifacts.
 
 ## Final objective
 
 Recover exactly one final flag:
 
-- `FLAG{2026_web_stego_crypto_polychain_master}`
+- `FLAG{2026_ultra_hard_web_stego_crypto_supplychain_single}`
 
-## Local setup
+## Setup
 
 1. `sudo apt-get update && sudo apt-get install -y python3-venv`
 2. `python3 -m venv .venv`
@@ -24,26 +25,24 @@ Open `http://127.0.0.1:5000`.
 
 ## End-to-end tests
 
-### Local E2E
+### Local E2E (two independent solver variants)
 
 - `./.venv/bin/python tests/run_e2e_local.py`
 
 ### Public URL E2E (Pinggy)
 
-- `./.venv/bin/python solve/solve_full_chain.py --base-url "https://your-subdomain.free.pinggy.link" --team "team_name"`
+- `./.venv/bin/python solve/solve_variant_a.py --base-url "https://your-subdomain.free.pinggy.link" --team "team_a"`
+- `./.venv/bin/python solve/solve_variant_b.py --base-url "https://your-subdomain.free.pinggy.link" --team "team_b"`
 
-## Intended solve chain
+## Stages (intended chain)
 
-1. Register team to obtain token.
-2. Exploit parser differential in `/api/proxy/fetch` using URL userinfo host confusion.
-3. Obtain bootstrap package from internal vault route.
-4. Recover `pepper` via XOR recipe (`pepper_ct_b64u`, `token`, `salt`).
-5. Derive passphrase.
-6. Download team carrier PNG.
-7. Extract LSB payload -> encrypted JSON.
-8. Decrypt AES-GCM payload and recover final flag.
-9. Submit to `/api/submit`.
+1. Register team and obtain token.
+2. Use `/api/gateway/fetch` with parser differential URL to hit internal vault and get bootstrap `seed`.
+3. Abuse mutable tag in `/api/repo/artifact` (`v5`) to force poisoned artifact resolution and obtain `tag_digest`.
+4. Pull key-material from `/api/metadata`, recover `vault_pepper` from `vault_cipher`.
+5. Download `/api/carrier` (PNG), extract LSB payload (JSON blob).
+6. Derive key and decrypt ChaCha20-Poly1305 payload, then submit the one final flag.
 
 ## Security note
 
-This is intentionally vulnerable and only for CTF/training.
+This challenge is intentionally vulnerable and only for CTF/training use.
