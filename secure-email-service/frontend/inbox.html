@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/node_modules/axist/dist/axist.min.css" />
+    <title>Secure Email Service: Inbox</title>
+  </head>
+  <body>
+    <div>
+      <h1 style="display: inline">Inbox</h1>
+      <a href="/compose.html"><button style="float: right">Compose</button></a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>from</th>
+          <th>subject</th>
+        </tr>
+      </thead>
+      <tbody id="inbox"></tbody>
+    </table>
+    <script type="module">
+      import { emails, requireLogin } from './src/api.js'
+      import { parse } from './src/email.js'
+
+      await requireLogin();
+
+      const table = document.getElementById('inbox');
+
+      for (const email of Object.values(await emails()).sort((a, b) => b.time - a.time)) {
+        const parsed = await parse(email.data);
+        
+        const from = document.createElement('td');
+        from.innerText = parsed.from;
+        
+        const subject = document.createElement('td');
+        subject.innerText = parsed.subject;
+
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        if (!email.read) {
+          tr.style.fontWeight = 'bold';
+        }
+        tr.onclick = () => {
+          const url = new URL('/email.html', origin);
+          url.searchParams.set('id', email.uuid);
+          window.location.href = url;
+        }
+        tr.appendChild(from);
+        tr.appendChild(subject);
+
+        table.appendChild(tr);
+      }
+    </script>
+  </body>
+</html>

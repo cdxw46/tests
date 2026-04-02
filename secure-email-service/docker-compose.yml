@@ -1,0 +1,10 @@
+services:
+  ses:
+    build: .
+    restart: always
+    ports:
+      - '8000:8000'
+    init: true
+  redis:
+    image: redis:7.2.4-alpine
+    restart: always

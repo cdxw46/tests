@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/node_modules/axist/dist/axist.min.css" />
+    <title>Secure Email Service: Compose</title>
+  </head>
+  <body>
+    <a href="/inbox.html"><button>Back to inbox</button></a>
+    <h4>Compose</h4>
+    <form id="compose">
+      <input name="to" placeholder="to" />
+      <br>
+      <input name="subject" placeholder="subject" style="width: 100%" />
+      <br>
+      <textarea 
+        name="body"
+        style="width: 100%; height: 50vh; font-family: monospace;"
+        placeholder="content" 
+      ></textarea>
+      <br>
+      <button>Send</button>
+    </form>
+    <script type="module">
+      import { email, requireLogin, send } from './src/api.js'
+
+      await requireLogin();
+
+      const params = new URL(window.location.href).searchParams;
+      if (params.get('to')) {
+        document.querySelector('[name=to]').value = params.get('to');
+      }
+      if (params.get('subject')) {
+        document.querySelector('[name=subject]').value = params.get('subject');
+      }
+      if (params.get('body')) {
+        document.querySelector('[name=body]').value = params.get('body');
+      }
+
+      document.getElementById('compose').onsubmit = async e => {
+        e.preventDefault();
+        const form = Object.fromEntries(new FormData(e.target));
+        try {
+          await send(form.to, form.subject, form.body);
+        } catch(e) {
+          alert(e)
+          return;
+        }
+        alert('sent!');
+        location.href = '/inbox.html';
+      }
+    </script>
+  </body>
+</html>

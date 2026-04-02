@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/node_modules/axist/dist/axist.min.css" />
+    <title>Secure Email Service: Login</title>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <b>You can grab your credentials for the first time at /api/password</b>
+    <form id="login">
+      <p>
+        <input type="text" name="username" placeholder="username">
+      </p>
+      <p>
+        <input type="password" name="password" placeholder="password">
+      </p>
+      <button>Login</button>
+    </form>
+    <script type="module">
+      import { requireLogin, login } from './src/api.js'
+
+      try {
+        await requireLogin(false);
+        location.href = '/inbox.html';
+      } catch(e) {}
+
+      document.getElementById('login').onsubmit = async e => {
+        e.preventDefault();
+        let token;
+        try {
+          token = await login(Object.fromEntries(new FormData(e.target)));
+        } catch(e) {
+          alert(e);
+        }
+        localStorage.setItem('token', token);
+        location.href = '/inbox.html';
+      }
+    </script>
+  </body>
+</html>

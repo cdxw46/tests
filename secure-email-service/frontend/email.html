@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/node_modules/axist/dist/axist.min.css" />
+    <title>Secure Email Service: Email</title>
+  </head>
+  <body>
+    <div>
+      <a href="/inbox.html"><button>Back to inbox</button></a>
+      <a id="reply"><button style="float: right">Reply</button></a>
+    </div>
+    <h4 id="subject"></h4>
+    <div id="content"></div>
+    <script type="module">
+      import { email, requireLogin, rootCert, markRead } from './src/api.js'
+      import { getSigned } from './src/smime.js';
+      import { parse } from './src/email.js'
+
+      await requireLogin();
+
+      const id = new URL(window.location.href).searchParams.get('id');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+        alert('invalid id');
+        location.href = '/inbox.html';
+      }
+
+      await markRead(id);
+
+      const msg = await email(id);
+      const parsed = await parse(msg.data);
+
+      document.getElementById('subject').innerText = parsed.subject;
+
+      const replyUrl = new URL('/reply.html', origin);
+      replyUrl.searchParams.set('id', id);
+      document.getElementById('reply').href = replyUrl;
+      
+      const content = document.getElementById('content');
+      if (parsed.html) {
+        const signed = await getSigned(msg.data, await rootCert());
+        if (signed) {
+          const { html } = await parse(signed);
+          const shadow = content.attachShadow({ mode: 'closed' });
+          shadow.innerHTML = `<style>:host { all: initial }</style>${html}`;
+        } else {
+          content.style.color = 'red';
+          content.innerText = 'invalid signature!';
+        }
+      } else {
+        const pre = document.createElement('pre');
+        pre.style.overflow = 'auto';
+        pre.innerText = parsed.text;
+        content.appendChild(pre);
+      }
+    </script>
+  </body>
+</html>

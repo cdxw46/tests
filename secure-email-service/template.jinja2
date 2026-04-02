@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #0077cc;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .body {
+      padding: 20px;
+      color: #333333;
+    }
+    .pre-container {
+      background-color: #f4f4f4;
+      padding-left: 15px;
+      padding-right: 15px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 8px;
+      font-family: monospace;
+    }
+    .footer {
+      text-align: center;
+      padding: 10px;
+      background-color: #f4f4f4;
+      color: #777777;
+      font-size: 12px;
+    }
+    a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>{{ title }}</h1>
+    </div>
+    <div class="body">
+      <div class="pre-container">
+        <pre>{{ content }}</pre>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2024 Secure Email Service. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

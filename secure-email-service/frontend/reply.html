@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/node_modules/axist/dist/axist.min.css" />
+    <title>Secure Email Service: Reply</title>
+  </head>
+  <body>
+    <a href="/inbox.html"><button>Back to inbox</button></a>
+    <form id="reply">
+      <h4 id="subject"></h4>
+      <textarea 
+        name="body"
+        style="width: 100%; height: 50vh; font-family: monospace;"
+        placeholder="content" 
+      ></textarea>
+      <br>
+      <button>Reply</button>
+    </form>
+    <script type="module">
+      import { email, requireLogin, send } from './src/api.js'
+      import { parse } from './src/email.js'
+
+      await requireLogin();
+
+      const id = new URL(window.location.href).searchParams.get('id');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+        alert('invalid id');
+        location.href = '/inbox.html';
+      }
+
+      const parsed = await parse((await email(id)).data);
+      const subject = `Re: ${parsed.subject}`;
+      document.getElementById('subject').innerText = subject;
+
+      document.getElementById('reply').onsubmit = async e => {
+        e.preventDefault();
+
+        const body = document.querySelector('[name=body]').value;
+        try {
+          await send(parsed.from, subject, body);
+        } catch(e) {
+          alert(e);
+          return;
+        }
+        
+        alert('sent!');
+        location.href = '/inbox.html';
+      }
+    </script>
+  </body>
+</html>
